@@ -1,0 +1,108 @@
+#!/bin/bash
+# The MIT License (MIT)
+# Copyright (c) 2016 giuseppe.demarco@unical.it
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+#set -x
+VLAN_RANGE="3 15"
+INT=eth2
+
+DEFAULT_NETWORKS="192.168.0.0/16",\
+"172.16.0.0/16",\
+"172.26.0.0/16",\
+"172.27.0.0/16",\
+"172.17.0.0/16",\
+"172.18.0.0/16",\
+"172.19.0.0/16",\
+"172.20.0.0/16",\
+"172.21.0.0/16",\
+"172.22.0.0/16",\
+"172.23.0.0/16",\
+"172.24.0.0/16",\
+"172.25.0.0/16",\
+"172.28.0.0/16",\
+"172.29.0.0/16",\
+"172.30.0.0/16",\
+"172.31.0.0/16",\
+"10.0.0.0/8"
+
+NETWORKS="10.97.0.0/16" 
+#NETWORKS="10.97.0.0/16,10.87.0.0/16" 
+
+
+# comment next line if you want to avoid the default network scan
+#NETWORK+=$DEFAULT_NETWORKS
+
+SPLITTED_NETWORKS=$(echo $NETWORKS | tr "," "\n")
+VLAN_RANGE_SEQ=$(seq $VLAN_RANGE)
+
+DEPENDENCIES="vconfig,netdiscover,tshark"
+LOG_PREFIX=$(date +'%d%m%Y.%H%M')".log"
+TSHARK_PIDS=""
+
+
+# figlet -w 51  "802.1q net scanner"  -f digital
+echo $'\n+-+-+-+-+-+-+ +-+-+-+ +-+-+-+-+-+-+-+\n|8|0|2|.|1|q| |n|e|t| |s|c|a|n|n|e|r|\n+-+-+-+-+-+-+ +-+-+-+ +-+-+-+-+-+-+-+\n'
+
+#Check for dependencies
+for d in $(echo $DEPENDENCIES | tr "," "\n"); do
+    which $d >/dev/null
+    if [ $? -eq 1 ]
+        then
+            echo ""
+            echo -e "\e[01;31m[!]\e[00m Unable to find the required $d program, install it and try again."
+            exit 1
+    fi;
+done
+
+echo "Testing VLAN range: " $VLAN_RANGE_SEQ
+echo "On these networks: "
+for i in $SPLITTED_NETWORKS; do echo $i; done
+echo 
+
+# make log dir if it doesn't exists
+mkdir -p logs;
+
+for i in $VLAN_RANGE_SEQ; do
+    vconfig add $INT $i
+    ifconfig $INT.$i up
+    echo
+    echo "running on "$INT"."$i
+    
+    { TSHARK_PID=$(nohup tshark -i eth2 -q -n -f "vlan $i" -w logs/tshark_vlan$i.$LOG_PREFIX.pcap >&3 3>&- & echo "$!"); } 3>&1
+    
+    echo "running sniffer process pid "$TSHARK_PID" on vlan"$i
+    TSHARK_PIDS+=$TSHARK_PID','
+    
+    for e in $SPLITTED_NETWORKS;
+        do
+        echo "testing "$e
+        netdiscover -i $INT.$i -P -r $e ;
+        done
+        
+    ifconfig $INT.$i down
+    vconfig rem $INT.$i
+    echo
+done
+
+echo
+echo "I am going to kill tshark these background processes:"
+echo $TSHARK_PIDS|tr "," " "
+
+read -r -p "Do You want to kill them? [y/N] " response
+case $response in
+    [yY][eE][sS]|[yY]) 
+        for t in $(echo $TSHARK_PIDS| tr "," "\n"); do kill -TERM $t > /dev/null 2>&1; echo "killed tshark process $t"; done
+        ;;
+    *)
+        echo "\nNo one tshark background processes were killed\n"
+        ;;
+esac
+
+echo
+echo "watch in logs folder for pcap files per vlan id"
+
+
