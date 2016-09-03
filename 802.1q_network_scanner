@@ -32,7 +32,6 @@ DEFAULT_NETWORKS="192.168.0.0/16",\
 NETWORKS="10.97.0.0/16" 
 #NETWORKS="10.97.0.0/16,10.87.0.0/16" 
 
-
 # comment next line if you want to avoid the default network scan
 #NETWORK+=$DEFAULT_NETWORKS
 
@@ -42,7 +41,6 @@ VLAN_RANGE_SEQ=$(seq $VLAN_RANGE)
 DEPENDENCIES="vconfig,netdiscover,tshark"
 LOG_PREFIX=$(date +'%d%m%Y.%H%M')".log"
 TSHARK_PIDS=""
-
 
 # figlet -w 51  "802.1q net scanner"  -f digital
 echo $'\n+-+-+-+-+-+-+ +-+-+-+ +-+-+-+-+-+-+-+\n|8|0|2|.|1|q| |n|e|t| |s|c|a|n|n|e|r|\n+-+-+-+-+-+-+ +-+-+-+ +-+-+-+-+-+-+-+\n'
