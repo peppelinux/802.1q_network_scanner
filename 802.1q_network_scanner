@@ -8,7 +8,7 @@
 
 #set -x
 VLAN_RANGE="3 15"
-INT=eth2
+INT=eth0
 
 DEFAULT_NETWORKS="192.168.0.0/16",\
 "172.16.0.0/16",\
@@ -55,6 +55,12 @@ for d in $(echo $DEPENDENCIES | tr "," "\n"); do
             exit 1
     fi;
 done
+
+
+if  [ -n $(grep "$INT" /proc/net/dev) ] ; then
+echo "Network interface $INT not found, please specify the correct interface name inside the script (INT variable)"
+exit 1
+fi
 
 echo "Testing VLAN range: " $VLAN_RANGE_SEQ
 echo "On these networks: "
