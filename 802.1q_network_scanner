@@ -62,7 +62,13 @@ for i in $SPLITTED_NETWORKS; do echo $i; done
 echo 
 
 # make log dir if it doesn't exists
-mkdir -p logs;
+if [ ! -d logs ]; then
+  mkdir -p logs;
+  else
+  mv logs logs.old.$LOG_PREFIX
+fi
+
+
 
 for i in $VLAN_RANGE_SEQ; do
     vconfig add $INT $i
@@ -70,7 +76,7 @@ for i in $VLAN_RANGE_SEQ; do
     echo
     echo "running on "$INT"."$i
     
-    { TSHARK_PID=$(nohup tshark -i eth2 -q -n -f "vlan $i" -w logs/tshark_vlan$i.$LOG_PREFIX.pcap >&3 3>&- & echo "$!"); } 3>&1
+    { TSHARK_PID=$(nohup tshark -i $INT -q -n -w logs/tshark_vlan$i.$LOG_PREFIX.pcap >&3 3>&- & echo "$!"); } 3>&1
     
     echo "running sniffer process pid "$TSHARK_PID" on vlan"$i
     TSHARK_PIDS+=$TSHARK_PID','
