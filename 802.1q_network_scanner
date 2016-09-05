@@ -99,7 +99,7 @@ for i in $VLAN_RANGE_SEQ; do
 done
 
 echo
-echo "I am going to kill tshark these background processes:"
+echo "I am going to kill these tshark background processes:"
 echo $TSHARK_PIDS|tr "," " "
 
 read -r -p "Do You want to kill them? [y/N] " response
@@ -113,6 +113,6 @@ case $response in
 esac
 
 echo
-echo "watch in logs folder for pcap files per vlan id"
+echo "watch in logs folder for pcap files logs"
 
 
