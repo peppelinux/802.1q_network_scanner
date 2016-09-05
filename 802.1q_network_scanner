@@ -71,6 +71,7 @@ echo
 if [ ! -d logs ]; then
   mkdir -p logs;
   else
+  echo "found existing logs folder, rename it to logs.old."$LOG_PREFIX 
   mv logs logs.old.$LOG_PREFIX
 fi
 
