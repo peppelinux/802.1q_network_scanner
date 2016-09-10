@@ -10,6 +10,8 @@
 VLAN_RANGE="6 7"
 INT=eth2
 
+IFTEST=`grep "$INT" /proc/net/dev`
+
 DEFAULT_NETWORKS="192.168.0.0/16",\
 "172.16.0.0/16",\
 "172.26.0.0/16",\
@@ -45,6 +47,13 @@ TSHARK_PIDS=""
 # figlet -w 51  "802.1q net scanner"  -f digital
 echo $'\n+-+-+-+-+-+-+ +-+-+-+ +-+-+-+-+-+-+-+\n|8|0|2|.|1|q| |n|e|t| |s|c|a|n|n|e|r|\n+-+-+-+-+-+-+ +-+-+-+ +-+-+-+-+-+-+-+\n'
 
+if  [ -n "$IFTEST" ] ; then
+echo "Found $INT network interface"
+else
+    echo "Network interface $INT not found, please specify the correct interface name inside the script (INT variable)"
+    exit 1
+fi
+
 #Check for dependencies
 for d in $(echo $DEPENDENCIES | tr "," "\n"); do
     which $d >/dev/null
@@ -57,10 +66,6 @@ for d in $(echo $DEPENDENCIES | tr "," "\n"); do
 done
 
 
-if  [ -n $(grep "$INT" /proc/net/dev) ] ; then
-echo "Network interface $INT not found, please specify the correct interface name inside the script (INT variable)"
-exit 1
-fi
 
 echo "Testing VLAN range: " $VLAN_RANGE_SEQ
 echo "On these networks: "
@@ -82,7 +87,7 @@ for i in $VLAN_RANGE_SEQ; do
     echo
     echo "running on "$INT"."$i
     
-    { TSHARK_PID=$(nohup tshark -i $INT -q -n -w logs/tshark_vlan$i.$LOG_PREFIX.pcap >&3 3>&- & echo "$!"); } 3>&1
+    { TSHARK_PID=$(nohup tshark -i $INT.$i -n -w logs/tshark_vlan$i.$LOG_PREFIX.pcap >&3 3>&- & echo "$!"); } 3>&1
     
     echo "running sniffer process pid "$TSHARK_PID" on vlan"$i
     TSHARK_PIDS+=$TSHARK_PID','
