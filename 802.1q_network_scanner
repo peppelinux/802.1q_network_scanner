@@ -7,8 +7,8 @@
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #set -x
-VLAN_RANGE="3 15"
-INT=eth0
+VLAN_RANGE="6 7"
+INT=eth2
 
 DEFAULT_NETWORKS="192.168.0.0/16",\
 "172.16.0.0/16",\
@@ -29,7 +29,7 @@ DEFAULT_NETWORKS="192.168.0.0/16",\
 "172.31.0.0/16",\
 "10.0.0.0/8"
 
-NETWORKS="10.97.0.0/16" 
+NETWORKS="10.87.0.0/16" 
 #NETWORKS="10.97.0.0/16,10.87.0.0/16" 
 
 # comment next line if you want to avoid the default network scan
@@ -68,13 +68,12 @@ for i in $SPLITTED_NETWORKS; do echo $i; done
 echo 
 
 # make log dir if it doesn't exists
-if [ ! -d logs ]; then
-  mkdir -p logs;
-  else
+if [ -d logs ]; then
   echo "found existing logs folder, moving it to logs.old."$LOG_PREFIX" ..."
   mv logs logs.old.$LOG_PREFIX
 fi
 
+mkdir -p logs;
 
 
 for i in $VLAN_RANGE_SEQ; do
