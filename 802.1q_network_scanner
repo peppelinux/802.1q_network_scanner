@@ -35,7 +35,7 @@ NETWORKS="10.87.0.0/16"
 #NETWORKS="10.97.0.0/16,10.87.0.0/16" 
 
 # comment next line if you want to avoid the default network scan
-#NETWORK+=$DEFAULT_NETWORKS
+#NETWORKS+=$DEFAULT_NETWORKS
 
 SPLITTED_NETWORKS=$(echo $NETWORKS | tr "," "\n")
 VLAN_RANGE_SEQ=$(seq $VLAN_RANGE)
